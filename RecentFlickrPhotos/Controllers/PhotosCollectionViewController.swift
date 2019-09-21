@@ -108,7 +108,7 @@ class PhotosCollectionViewController: UICollectionViewController {
         let contentHeight = scrollView.contentSize.height
         
         // Do we need to fetch more photos ?
-        if !photos.isEmpty && !fetchingMorePhotos && offsetY > contentHeight - scrollView.frame.height * 4  {
+        if !photos.isEmpty && !fetchingMorePhotos && offsetY > contentHeight - scrollView.frame.height * 2  {
             fetchMorePhotos()
         }
     }

@@ -9,7 +9,7 @@
 import UIKit
 
 //TODO: add pinch to zoom
-class PhotosDetailCollectionViewController: UICollectionViewController {
+class PhotosDetailCollectionViewController: UICollectionViewController, PhotoZoomDelegate {
 
     var photos = [PhotoViewModel]()
     var currentPhotoIndexPath = IndexPath(row: 0, section: 0)
@@ -49,6 +49,14 @@ class PhotosDetailCollectionViewController: UICollectionViewController {
         currentPhotoIndexPath.row = Int(ceil(x/w))
     }
     
+    func zoomBegain() {
+        collectionView.isScrollEnabled = false
+    }
+    
+    func zoomEnded() {
+        collectionView.isScrollEnabled = true
+    }
+    
     // MARK: UI Related
     override var prefersStatusBarHidden: Bool {
         return overlayIsHidden
@@ -78,6 +86,7 @@ class PhotosDetailCollectionViewController: UICollectionViewController {
         detailCell.imageView.imageFromURL(photo.imageUrl)
         detailCell.titleLabel.text = photo.title
         detailCell.setOverlayHidden(overlayIsHidden)
+//        detailCell.zoomDelegate = self
         return detailCell
     }
     
@@ -86,6 +95,16 @@ class PhotosDetailCollectionViewController: UICollectionViewController {
     }
     
     //MARK: CollectionView - Delegate
+    override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard let detailCell = cell as? PhotoDetailCell else { return }
+        detailCell.resetImageSizeAndCenter()
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard let detailCell = cell as? PhotoDetailCell else { return }
+        detailCell.resetImageSizeAndCenter()
+    }
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return (view.frame.width - view.safeAreaLayoutGuide.layoutFrame.width)
     }
