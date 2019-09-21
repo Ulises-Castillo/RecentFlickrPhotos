@@ -13,6 +13,10 @@ class FPImageView: UIImageView {
     
     private var imageUrlString: String?
     
+    public static func dumpCache() {
+        imageCache.removeAllObjects()
+    }
+    
     public func imageFromURL(_ url: URL) {
         // prevent flashing incorrect image on
         // imageView reuse (within a cell)

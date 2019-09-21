@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B14172CB23365B4100E8C709 /* ActivityIndicatorCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B14172CA23365B4100E8C709 /* ActivityIndicatorCell.swift */; };
 		B161A552232C4AE000E79FAC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B161A551232C4AE000E79FAC /* AppDelegate.swift */; };
 		B161A554232C4AE000E79FAC /* PhotosCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B161A553232C4AE000E79FAC /* PhotosCollectionViewController.swift */; };
 		B161A559232C4AE200E79FAC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B161A558232C4AE200E79FAC /* Assets.xcassets */; };
@@ -28,6 +29,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B14172CA23365B4100E8C709 /* ActivityIndicatorCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityIndicatorCell.swift; sourceTree = "<group>"; };
 		B161A54E232C4AE000E79FAC /* Flickr | Recent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Flickr | Recent.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B161A551232C4AE000E79FAC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B161A553232C4AE000E79FAC /* PhotosCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosCollectionViewController.swift; sourceTree = "<group>"; };
@@ -61,6 +63,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B14172CC23365B6100E8C709 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				B161A574232C69D900E79FAC /* ThumbnailPhotoCell.swift */,
+				B161A577232C6A4200E79FAC /* PhotoDetailCell.swift */,
+				B14172CA23365B4100E8C709 /* ActivityIndicatorCell.swift */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
 		B161A545232C4AE000E79FAC = {
 			isa = PBXGroup;
 			children = (
@@ -106,8 +118,7 @@
 		B161A576232C69DE00E79FAC /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				B161A574232C69D900E79FAC /* ThumbnailPhotoCell.swift */,
-				B161A577232C6A4200E79FAC /* PhotoDetailCell.swift */,
+				B14172CC23365B6100E8C709 /* Cells */,
 				B161A586232C8A6F00E79FAC /* FPImageView.swift */,
 				B161A58C232D582A00E79FAC /* UIViewExtension.swift */,
 			);
@@ -215,6 +226,7 @@
 			files = (
 				B161A580232C80E700E79FAC /* BackendService.swift in Sources */,
 				B161A58B232CC34F00E79FAC /* FlickrAPI.swift in Sources */,
+				B14172CB23365B4100E8C709 /* ActivityIndicatorCell.swift in Sources */,
 				B161A591232FF14300E79FAC /* Log.swift in Sources */,
 				B161A589232CBA8D00E79FAC /* PhotoListViewModel.swift in Sources */,
 				B161A57A232C744500E79FAC /* PhotoList.swift in Sources */,

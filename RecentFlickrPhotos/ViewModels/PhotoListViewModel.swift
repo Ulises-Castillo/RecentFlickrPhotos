@@ -24,10 +24,10 @@ import Foundation
                 self?.updatePhotoList(photoList: photos)
             }
         }
-        request.failureHandler = { error in
+        request.failureHandler = { [weak self] error in
             DispatchQueue.main.async {
-                let tmp = self.photos
-                self.photos = tmp // trigger KVO
+                let tmp = self?.photos
+                self?.photos = tmp // trigger KVO
                 Log.debug(error.localizedDescription)
             }
         }
@@ -35,14 +35,44 @@ import Foundation
         request.execute()
     }
     
+    func fetchMorePhotos() {
+        FlickrAPI.page += 1 // next page of photos
+        var request = FlickrGetPhotosRequest()
+        
+        request.successHandler = { [weak self] photos in
+            DispatchQueue.main.async {
+                self?.addToPhotosList(photoList: photos)
+            }
+        }
+        request.failureHandler = { [weak self] error in
+            DispatchQueue.main.async {
+                FlickrAPI.page -= 1
+                let tmp = self?.photos
+                self?.photos = tmp // trigger KVO
+                Log.debug(error.localizedDescription)
+            }
+        }
+        
+        request.execute()
+    }
+    
     private func updatePhotoList(photoList: PhotoList) {
-        var tempPhotoList = [PhotoViewModel]()
+        photos = photoViewModels(from: photoList)
+    }
+    
+    private func addToPhotosList(photoList: PhotoList) {
+        guard let _ = photos else { return }
+        photos! += photoViewModels(from: photoList)
+    }
+    
+    private func photoViewModels(from photoList: PhotoList) -> [PhotoViewModel] {
+        var viewModels = [PhotoViewModel]()
         for photo in photoList.models {
             guard let photoViewModel = PhotoViewModel(photo: photo) else {
                 continue
             }
-            tempPhotoList.append(photoViewModel)
+            viewModels.append(photoViewModel)
         }
-        photos = tempPhotoList
+        return viewModels
     }
 }

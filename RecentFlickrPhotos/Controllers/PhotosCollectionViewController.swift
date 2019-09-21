@@ -14,6 +14,7 @@ class PhotosCollectionViewController: UICollectionViewController {
     
     var photos = [PhotoViewModel]()
     var focusedPhotoIndexPath: IndexPath?
+    private var fetchingMorePhotos = false
     private let photoListViewModel = PhotoListViewModel()
     private var photoListKVO: NSKeyValueObservation? = nil
     private let spacing: CGFloat = 5
@@ -51,6 +52,7 @@ class PhotosCollectionViewController: UICollectionViewController {
     private func configureCollectionView() {
         collectionView.backgroundColor = .white
         collectionView.register(ThumbnailPhotoCell.self, forCellWithReuseIdentifier: ThumbnailPhotoCell.reuseId)
+        collectionView.register(ActivityIndicatorCell.self, forCellWithReuseIdentifier: ActivityIndicatorCell.reuseId)
         guard let flowLayout = collectionView?.collectionViewLayout as? UICollectionViewFlowLayout else { return }
         flowLayout.sectionInset = UIEdgeInsets(top: spacing, left: spacing, bottom: spacing, right: spacing)
         flowLayout.minimumLineSpacing = spacing
@@ -61,6 +63,7 @@ class PhotosCollectionViewController: UICollectionViewController {
     private func observePhotoListSetup() {
         photoListKVO = photoListViewModel.observe(\PhotoListViewModel.photos, options: .new) { [weak self] (photoListViewModel, change) in
             self?.collectionView.refreshControl?.endRefreshing()
+            self?.fetchingMorePhotos = false
             guard let photos = photoListViewModel.photos else { return }
             self?.photos = photos
             self?.collectionView.reloadData()
@@ -74,6 +77,10 @@ class PhotosCollectionViewController: UICollectionViewController {
         detailVC.photos = photos
         detailVC.setSelectedPhotoIndexPath(selectedPhotoIndex)
         return detailVC
+    }
+    
+    override func didReceiveMemoryWarning() {
+        FPImageView.dumpCache()
     }
     
     // MARK: UI Related
@@ -96,8 +103,31 @@ class PhotosCollectionViewController: UICollectionViewController {
         }
     }
     
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        
+        // Do we need to fetch more photos ?
+        if !photos.isEmpty && !fetchingMorePhotos && offsetY > contentHeight - scrollView.frame.height * 4  {
+            fetchMorePhotos()
+        }
+    }
+    
+    func fetchMorePhotos() {
+        fetchingMorePhotos = true
+        collectionView.reloadSections(IndexSet(integer: 1))
+        photoListViewModel.fetchMorePhotos()
+    }
+    
     //MARK: CollectionView - Data Source
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if indexPath.section == 1 {
+            guard let activityCell = collectionView.dequeueReusableCell(withReuseIdentifier: ActivityIndicatorCell.reuseId, for: indexPath) as? ActivityIndicatorCell else {
+                return UICollectionViewCell()
+            }
+            activityCell.spinner.startAnimating()
+            return activityCell
+        }
         guard let thumbnailCell = collectionView.dequeueReusableCell(withReuseIdentifier: ThumbnailPhotoCell.reuseId, for: indexPath) as? ThumbnailPhotoCell else {
             return UICollectionViewCell()
         }
@@ -107,13 +137,21 @@ class PhotosCollectionViewController: UICollectionViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return section == 0 ? photos.count : 0
+        if section == 1 && fetchingMorePhotos {
+            return 1
+        } else {
+            return section == 0 ? photos.count : 0
+        }
     }
     
     //MARK: CollectionView - Delegate
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let detailVC = prepareDetailControllerForSegue(selectedPhotoIndex: indexPath)
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    override func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 2
     }
 }
 
@@ -123,6 +161,9 @@ extension PhotosCollectionViewController: UICollectionViewDelegateFlowLayout {
         let numberOfItemsPerRow: CGFloat = UIDevice.current.orientation.isLandscape ? NumberOfPhotosPerRowLandscape : NumberOfPhotosPerRowPortrait
         let totalSpacing = (2 * spacing) + ((numberOfItemsPerRow - 1) * spacing)
         let width = (collectionView.safeAreaLayoutGuide.layoutFrame.width - totalSpacing) / numberOfItemsPerRow
+        if indexPath.section == 1 {
+            return CGSize(width: collectionView.safeAreaLayoutGuide.layoutFrame.width, height: width / 1.5)
+        }
         return CGSize(width: width, height: width)
     }
 }

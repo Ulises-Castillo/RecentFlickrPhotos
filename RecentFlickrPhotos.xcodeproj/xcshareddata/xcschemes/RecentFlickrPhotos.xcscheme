@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "B161A54D232C4AE000E79FAC"
-               BuildableName = "RecentFlickrPhotos.app"
+               BuildableName = "Flickr | Recent.app"
                BlueprintName = "RecentFlickrPhotos"
                ReferencedContainer = "container:RecentFlickrPhotos.xcodeproj">
             </BuildableReference>
@@ -43,7 +43,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B161A54D232C4AE000E79FAC"
-            BuildableName = "RecentFlickrPhotos.app"
+            BuildableName = "Flickr | Recent.app"
             BlueprintName = "RecentFlickrPhotos"
             ReferencedContainer = "container:RecentFlickrPhotos.xcodeproj">
          </BuildableReference>
@@ -66,7 +66,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B161A54D232C4AE000E79FAC"
-            BuildableName = "RecentFlickrPhotos.app"
+            BuildableName = "Flickr | Recent.app"
             BlueprintName = "RecentFlickrPhotos"
             ReferencedContainer = "container:RecentFlickrPhotos.xcodeproj">
          </BuildableReference>
@@ -85,7 +85,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "B161A54D232C4AE000E79FAC"
-            BuildableName = "RecentFlickrPhotos.app"
+            BuildableName = "Flickr | Recent.app"
             BlueprintName = "RecentFlickrPhotos"
             ReferencedContainer = "container:RecentFlickrPhotos.xcodeproj">
          </BuildableReference>

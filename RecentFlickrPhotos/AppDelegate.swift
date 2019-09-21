@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window!.makeKeyAndVisible()
         
         let photosVC = PhotosCollectionViewController(collectionViewLayout:  UICollectionViewFlowLayout())
-        window!.rootViewController = UINavigationController.init(rootViewController: photosVC)
+        window!.rootViewController = UINavigationController(rootViewController: photosVC)
         return true
     }
 }
