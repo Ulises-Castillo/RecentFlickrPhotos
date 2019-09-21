@@ -50,7 +50,7 @@ class PhotosDetailCollectionViewController: UICollectionViewController {
     }
     
     // MARK: UI Related
-    override var prefersStatusBarHidden: Bool {
+     override var prefersStatusBarHidden: Bool {
         return overlayIsHidden
     }
     

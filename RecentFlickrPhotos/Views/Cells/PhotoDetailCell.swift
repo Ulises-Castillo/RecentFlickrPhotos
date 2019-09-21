@@ -10,7 +10,7 @@ import UIKit
 
 //TODO: zoom (pinch, pan gesture recognizers)
 //TODO: container view for titleLabel, to enforce consistent leading/tailing insets
-class PhotoDetailCell: UICollectionViewCell {
+class PhotoDetailCell: UICollectionViewCell, UIScrollViewDelegate, UIGestureRecognizerDelegate {
     static let reuseId = "PhotoDetailCell"
     
     let imageView = FPImageView()
@@ -22,11 +22,23 @@ class PhotoDetailCell: UICollectionViewCell {
     }
     
     private func setupViews() {
+        let scrollView = UIScrollView()
+        scrollView.minimumZoomScale = 1
+        scrollView.maximumZoomScale = 3.5
+        scrollView.delegate = self
+        scrollView.isUserInteractionEnabled = true
+        
+        scrollView.addEngulfingSubview(imageView)
         imageView.backgroundColor = .black
         imageView.contentMode = .scaleAspectFit
         imageView.addSubview(titleLabel)
-        addEngulfingSubview(imageView)
+        imageView.isUserInteractionEnabled = true
+        addEngulfingSubview(scrollView)
         configureTitleLabel()
+    }
+    
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return imageView
     }
     
     private func configureTitleLabel() {
