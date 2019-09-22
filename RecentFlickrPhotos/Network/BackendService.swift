@@ -17,12 +17,8 @@ class BackendService {
     
     func execute(backendRequest: BackendRequest) {
         
-        backendQueue.async(qos: .userInteractive, flags: []) { [weak self] () -> Void in
-            guard let strongSelf = self else {
-                Log.debug("Error executing backend request (1)")
-                return
-            }
-            guard let url = URL(string: strongSelf.baseUrl + "/" + backendRequest.endpoint) else {
+        backendQueue.async(qos: .userInteractive, flags: []) { [unowned self] () -> Void in
+            guard let url = URL(string: self.baseUrl + "/" + backendRequest.endpoint) else {
                 return
             }
             
@@ -39,7 +35,7 @@ class BackendService {
                 }
             }
             
-            strongSelf.session.dataTask(with: urlRequest) { (data, resposnse, error) in
+            self.session.dataTask(with: urlRequest) { (data, resposnse, error) in
                 guard let data = data, let _ = resposnse, error == nil else {
                     if let error = error {
                         Log.debug("Flickr | API Request | \(backendRequest.method) | \(backendRequest.endpoint) | FAIL | Error: \(error.localizedDescription)")

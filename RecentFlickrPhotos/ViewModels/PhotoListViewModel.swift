@@ -19,15 +19,15 @@ import Foundation
     func reloadPhotos() {
         var request = FlickrGetPhotosRequest()
         
-        request.successHandler = { [weak self] photos in
+        request.successHandler = { [unowned self] photos in
             DispatchQueue.main.async {
-                self?.updatePhotoList(photoList: photos)
+                self.updatePhotoList(photoList: photos)
             }
         }
-        request.failureHandler = { [weak self] error in
+        request.failureHandler = { [unowned self] error in
             DispatchQueue.main.async {
-                let tmp = self?.photos
-                self?.photos = tmp // trigger KVO
+                let tmp = self.photos
+                self.photos = tmp // trigger KVO
                 Log.debug(error.localizedDescription)
             }
         }
@@ -39,16 +39,16 @@ import Foundation
         FlickrAPI.page += 1 // next page of photos
         var request = FlickrGetPhotosRequest()
         
-        request.successHandler = { [weak self] photos in
+        request.successHandler = { [unowned self] photos in
             DispatchQueue.main.async {
-                self?.addToPhotosList(photoList: photos)
+                self.addToPhotosList(photoList: photos)
             }
         }
-        request.failureHandler = { [weak self] error in
+        request.failureHandler = { [unowned self] error in
             DispatchQueue.main.async {
                 FlickrAPI.page -= 1
-                let tmp = self?.photos
-                self?.photos = tmp // trigger KVO
+                let tmp = self.photos
+                self.photos = tmp // trigger KVO
                 Log.debug(error.localizedDescription)
             }
         }

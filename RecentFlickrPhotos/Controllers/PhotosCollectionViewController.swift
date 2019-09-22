@@ -61,12 +61,12 @@ class PhotosCollectionViewController: UICollectionViewController {
     }
     
     private func observePhotoListSetup() {
-        photoListKVO = photoListViewModel.observe(\PhotoListViewModel.photos, options: .new) { [weak self] (photoListViewModel, change) in
-            self?.collectionView.refreshControl?.endRefreshing()
-            self?.fetchingMorePhotos = false
+        photoListKVO = photoListViewModel.observe(\PhotoListViewModel.photos, options: .new) { [unowned self] (photoListViewModel, change) in
+            self.collectionView.refreshControl?.endRefreshing()
+            self.fetchingMorePhotos = false
             guard let photos = photoListViewModel.photos else { return }
-            self?.photos = photos
-            self?.collectionView.reloadData()
+            self.photos = photos
+            self.collectionView.reloadData()
         }
     }
     
