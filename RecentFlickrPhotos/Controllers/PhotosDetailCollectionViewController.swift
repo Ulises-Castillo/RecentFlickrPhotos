@@ -97,12 +97,12 @@ class PhotosDetailCollectionViewController: UICollectionViewController, PhotoZoo
     //MARK: CollectionView - Delegate
     override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         guard let detailCell = cell as? PhotoDetailCell else { return }
-        detailCell.resetImageSizeAndCenter()
+        detailCell.resetImageSizeAndCenter() //TODO: capture imageView frame, bounds, & center
     }
     
     override func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         guard let detailCell = cell as? PhotoDetailCell else { return }
-        detailCell.resetImageSizeAndCenter()
+        detailCell.resetImageSizeAndCenter() //TODO: restore imageView frame, bounds, & center
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {

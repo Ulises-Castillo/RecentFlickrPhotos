@@ -10,7 +10,7 @@ import UIKit
 
 //TODO: zoom (pinch, pan gesture recognizers)
 //TODO: container view for titleLabel, to enforce consistent leading/tailing insets
-protocol PhotoZoomDelegate: class {
+protocol PhotoZoomDelegate: AnyObject {
     func zoomBegain()
     func zoomEnded()
 }
@@ -20,8 +20,10 @@ class PhotoDetailCell: UICollectionViewCell {
     
     let imageView = FPImageView()
     let titleLabel = UILabel()
+    private let overlay = UIView()
     private var isZooming = false
     private var originalImageCenter: CGPoint?
+    private var originalImageSize: CGSize?
 //    weak var zoomDelegate: PhotoZoomDelegate?
     
     override init(frame: CGRect) {
@@ -30,18 +32,29 @@ class PhotoDetailCell: UICollectionViewCell {
     }
     
     private func setupViews() {
-        clipsToBounds = false
+        clipsToBounds = true
         imageView.backgroundColor = .black
         imageView.contentMode = .scaleAspectFit
-        imageView.addSubview(titleLabel)
+        imageView.addSubview(overlay)
         addEngulfingSubview(imageView)
-        configureTitleLabel()
+        configureOverlay()
         configureGestureRecognizers()
     }
     
-    private func configureTitleLabel() {
+    private func configureOverlay() {
+        overlay.addSubview(titleLabel)
+        overlay.backgroundColor = UIColor(white: 0, alpha: 0.6)
+        overlay.translatesAutoresizingMaskIntoConstraints = false
+        let overlayConstraints = [
+            overlay.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor),
+            overlay.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor),
+            overlay.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor),
+            overlay.heightAnchor.constraint(equalTo: titleLabel.heightAnchor)
+        ]
+        NSLayoutConstraint.activate(overlayConstraints)
+        
         titleLabel.textColor = .white
-        titleLabel.backgroundColor = UIColor(white: 0, alpha: 0.6)
+        titleLabel.backgroundColor = UIColor(white: 0, alpha: 0)
         titleLabel.font = UIFont.boldSystemFont(ofSize: 70)
         titleLabel.adjustsFontSizeToFitWidth = true
         titleLabel.textAlignment = .center
@@ -49,20 +62,20 @@ class PhotoDetailCell: UICollectionViewCell {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.sizeToFit()
         let labelConstraints = [
-            titleLabel.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor),
-            titleLabel.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor),
+            titleLabel.leadingAnchor.constraint(equalTo: overlay.leadingAnchor, constant: 10),
+            titleLabel.trailingAnchor.constraint(equalTo: overlay.trailingAnchor, constant: -10),
+            titleLabel.bottomAnchor.constraint(equalTo: overlay.bottomAnchor, constant: -1),
         ]
         NSLayoutConstraint.activate(labelConstraints)
     }
     
     func setOverlayHidden(_ isHidden: Bool, animated: Bool = false) {
         if !animated {
-            titleLabel.isHidden = isHidden
+            overlay.isHidden = isHidden
             return
         }
         UIView.animate(withDuration: 0.25) {
-            self.titleLabel.isHidden = isHidden
+            self.overlay.isHidden = isHidden
         }
     }
     
@@ -83,15 +96,19 @@ extension PhotoDetailCell: UIGestureRecognizerDelegate {
     }
     
     func resetImageSizeAndCenter() {
-        guard let center = originalImageCenter else { return }
+        guard let center = originalImageCenter, let size = originalImageSize else { return }
         isZooming = false
+       imageView.frame.size = size
         imageView.center = center
         imageView.transform = CGAffineTransform.identity
+        originalImageCenter = nil
+        originalImageSize = nil
     }
     
     @objc func pan(sender: UIPanGestureRecognizer) {
-        if self.isZooming && sender.state == .began {
+        if self.isZooming && sender.state == .began && self.originalImageCenter == nil {
             self.originalImageCenter = sender.view?.center
+            self.originalImageSize = sender.view?.frame.size
         } else if self.isZooming && sender.state == .changed {
             let translation = sender.translation(in: self)
             if let view = sender.view {
@@ -131,18 +148,19 @@ extension PhotoDetailCell: UIGestureRecognizerDelegate {
             }
         } else if sender.state == .ended || sender.state == .failed || sender.state == .cancelled {
             guard let center = self.originalImageCenter else { return }
-            self.originalImageCenter = nil
+//            self.originalImageCenter = nil
 //            zoomDelegate?.zoomEnded()
             UIView.animate(withDuration: 0.3, animations: {
                 self.imageView.transform = CGAffineTransform.identity
                 self.imageView.center = center
             }, completion: { _ in
-                self.isZooming = false
+//                self.isZooming = false
             })
         }
     }
     
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return true
+        return true //TODO: return false unless user has panned to the edge of photo !!
+                    // will have to deal with gesture precedence
     }
 }
