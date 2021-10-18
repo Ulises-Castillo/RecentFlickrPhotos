@@ -8,10 +8,13 @@
 
 import Foundation
 
+// most elemental ViewModel
 @objc class PhotoViewModel: NSObject {
+    // only propertied required for UI
     let imageUrl: URL
     let title: String
     
+    // Takes a PhotoModel and returns a PhotoViewModel
     init?(photo: Photo) {
         guard let url = FlickrAPI.imageUrl(photo: photo) else {
             return nil

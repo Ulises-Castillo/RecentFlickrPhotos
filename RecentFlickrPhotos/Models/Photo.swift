@@ -8,6 +8,7 @@
 
 import Foundation
 
+// most elemental model of the data to be recieved from the API
 struct Photo: Codable {
     let id: String
     let title: String

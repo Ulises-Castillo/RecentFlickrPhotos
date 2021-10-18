@@ -8,17 +8,23 @@
 
 import Foundation
 
+// top layer enclosing ViewModel
+// responsible for fetching & managing the list of ViewModels required to display photos
 @objc class PhotoListViewModel: NSObject {
     @objc dynamic var photos: [PhotoViewModel]?
     
+    // upon creation
     override init() {
         super.init()
-        reloadPhotos()
+        fetchPhotos() // kickoff data fetch
     }
     
-    func reloadPhotos() {
+    // request/fetch data
+    func fetchPhotos() {
+        // create new request struct containing all params required to execute
         var request = FlickrGetPhotosRequest()
         
+        // set the handlers called upon completion of the request
         request.successHandler = { [unowned self] photos in
             DispatchQueue.main.async {
                 self.updatePhotoList(photoList: photos)
@@ -31,7 +37,7 @@ import Foundation
                 Log.debug(error.localizedDescription)
             }
         }
-
+        // initiate the request process
         request.execute()
     }
     
@@ -65,6 +71,7 @@ import Foundation
         photos! += photoViewModels(from: photoList)
     }
     
+    // Takes a PhotoList model and return a list of PhotoViewModels
     private func photoViewModels(from photoList: PhotoList) -> [PhotoViewModel] {
         var viewModels = [PhotoViewModel]()
         for photo in photoList.models {

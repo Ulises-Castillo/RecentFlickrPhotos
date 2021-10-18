@@ -91,7 +91,7 @@ class PhotosCollectionViewController: UICollectionViewController {
     }
     
     @objc private func handleRefreshControl() {
-        photoListViewModel.reloadPhotos()
+        photoListViewModel.fetchPhotos()
     }
     
     override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
