@@ -16,6 +16,7 @@ import Foundation
     // upon creation
     override init() {
         super.init()
+        
         fetchPhotos() // kickoff data fetch
     }
     
@@ -37,6 +38,7 @@ import Foundation
                 Log.debug(error.localizedDescription)
             }
         }
+    
         // initiate the request process
         request.execute()
     }

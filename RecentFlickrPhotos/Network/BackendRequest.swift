@@ -30,6 +30,8 @@ protocol BackendRequest {
 // default implementaion of the execute() method for the BackendRequest protocol
 extension BackendRequest {
     func execute() {
-        BackendService.sharedInstance.execute(backendRequest: self)
+        Task {
+            await BackendService.sharedInstance.execute(backendRequest: self)
+        }
     }
 }
