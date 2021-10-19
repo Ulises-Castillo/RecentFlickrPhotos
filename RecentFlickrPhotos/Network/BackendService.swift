@@ -17,8 +17,8 @@ class BackendService {
     
     func execute(backendRequest: BackendRequest) {
         
-        backendQueue.async(qos: .userInteractive, flags: []) { [unowned self] () -> Void in
-            guard let url = URL(string: self.baseUrl + "/" + backendRequest.endpoint) else {
+        backendQueue.async(qos: .userInteractive, flags: []) { [weak self] () -> Void in
+            guard let self = self, let url = URL(string: self.baseUrl + "/" + backendRequest.endpoint) else {
                 return
             }
             
