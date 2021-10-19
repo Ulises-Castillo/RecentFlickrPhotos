@@ -68,7 +68,8 @@ class PhotosCollectionViewController: UICollectionViewController {
                 self.collectionView.refreshControl?.endRefreshing()
                 self.fetchingMorePhotos = false
                 guard let photos = photoListViewModel.photos else { return }
-                self.items = itemsFromPhotos(photoViewModels: photos)
+                let newPhotos = photos[self.items.count..<photos.count]
+                self.items += itemsFromPhotos(photoViewModels: newPhotos)
                 updateDataSource()
             }
         }
@@ -140,7 +141,7 @@ class PhotosCollectionViewController: UICollectionViewController {
         }
     }
     
-    private func itemsFromPhotos(photoViewModels: [PhotoViewModel]) -> [Item] {
+    private func itemsFromPhotos(photoViewModels: ArraySlice<PhotoViewModel>) -> [Item] {
         var items = [Item]()
         for photo in photoViewModels {
             items.append(Item(photoViewModel: photo))
