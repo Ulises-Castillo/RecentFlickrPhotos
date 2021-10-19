@@ -15,4 +15,3 @@ struct Log {
         #endif
     }
 }
-

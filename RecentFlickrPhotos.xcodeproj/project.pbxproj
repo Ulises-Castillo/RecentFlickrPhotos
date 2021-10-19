@@ -63,16 +63,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		B14172CC23365B6100E8C709 /* Cells */ = {
-			isa = PBXGroup;
-			children = (
-				B161A574232C69D900E79FAC /* ThumbnailPhotoCell.swift */,
-				B161A577232C6A4200E79FAC /* PhotoDetailCell.swift */,
-				B14172CA23365B4100E8C709 /* ActivityIndicatorCell.swift */,
-			);
-			path = Cells;
-			sourceTree = "<group>";
-		};
 		B161A545232C4AE000E79FAC = {
 			isa = PBXGroup;
 			children = (
@@ -92,13 +82,9 @@
 		B161A550232C4AE000E79FAC /* RecentFlickrPhotos */ = {
 			isa = PBXGroup;
 			children = (
+				B1FA78A4271F84470039BD3D /* Screens */,
+				B1FA78A3271F843E0039BD3D /* Core */,
 				B161A551232C4AE000E79FAC /* AppDelegate.swift */,
-				B161A573232C699800E79FAC /* Controllers */,
-				B161A57B232C744C00E79FAC /* Models */,
-				B161A57E232C761400E79FAC /* ViewModels */,
-				B161A576232C69DE00E79FAC /* Views */,
-				B161A581232C80EC00E79FAC /* Network */,
-				B161A590232FF14300E79FAC /* Log.swift */,
 				B161A558232C4AE200E79FAC /* Assets.xcassets */,
 				B161A55A232C4AE200E79FAC /* LaunchScreen.storyboard */,
 				B161A55D232C4AE200E79FAC /* Info.plist */,
@@ -106,41 +92,22 @@
 			path = RecentFlickrPhotos;
 			sourceTree = "<group>";
 		};
-		B161A573232C699800E79FAC /* Controllers */ = {
+		B161A576232C69DE00E79FAC /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				B161A553232C4AE000E79FAC /* PhotosCollectionViewController.swift */,
-				B161A571232C60CB00E79FAC /* PhotosDetailCollectionViewController.swift */,
-			);
-			path = Controllers;
-			sourceTree = "<group>";
-		};
-		B161A576232C69DE00E79FAC /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				B14172CC23365B6100E8C709 /* Cells */,
+				B161A590232FF14300E79FAC /* Log.swift */,
 				B161A586232C8A6F00E79FAC /* FPImageView.swift */,
 				B161A58C232D582A00E79FAC /* UIViewExtension.swift */,
 			);
-			path = Views;
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		B161A57B232C744C00E79FAC /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				B161A579232C744500E79FAC /* PhotoList.swift */,
-				B161A58E232F1A6500E79FAC /* Photo.swift */,
+				B1FA78A7271F855E0039BD3D /* Network Data Models */,
 			);
 			path = Models;
-			sourceTree = "<group>";
-		};
-		B161A57E232C761400E79FAC /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				B161A588232CBA8C00E79FAC /* PhotoListViewModel.swift */,
-				B161A57C232C760E00E79FAC /* PhotoViewModel.swift */,
-			);
-			path = ViewModels;
 			sourceTree = "<group>";
 		};
 		B161A581232C80EC00E79FAC /* Network */ = {
@@ -152,6 +119,55 @@
 				B161A57F232C80E700E79FAC /* BackendService.swift */,
 			);
 			path = Network;
+			sourceTree = "<group>";
+		};
+		B1FA78A3271F843E0039BD3D /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				B161A57B232C744C00E79FAC /* Models */,
+				B161A581232C80EC00E79FAC /* Network */,
+				B161A576232C69DE00E79FAC /* Utils */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		B1FA78A4271F84470039BD3D /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				B1FA78A5271F84630039BD3D /* Photos */,
+				B1FA78A6271F84820039BD3D /* Photos Detail */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		B1FA78A5271F84630039BD3D /* Photos */ = {
+			isa = PBXGroup;
+			children = (
+				B161A553232C4AE000E79FAC /* PhotosCollectionViewController.swift */,
+				B161A588232CBA8C00E79FAC /* PhotoListViewModel.swift */,
+				B161A57C232C760E00E79FAC /* PhotoViewModel.swift */,
+				B161A574232C69D900E79FAC /* ThumbnailPhotoCell.swift */,
+				B14172CA23365B4100E8C709 /* ActivityIndicatorCell.swift */,
+			);
+			path = Photos;
+			sourceTree = "<group>";
+		};
+		B1FA78A6271F84820039BD3D /* Photos Detail */ = {
+			isa = PBXGroup;
+			children = (
+				B161A571232C60CB00E79FAC /* PhotosDetailCollectionViewController.swift */,
+				B161A577232C6A4200E79FAC /* PhotoDetailCell.swift */,
+			);
+			path = "Photos Detail";
+			sourceTree = "<group>";
+		};
+		B1FA78A7271F855E0039BD3D /* Network Data Models */ = {
+			isa = PBXGroup;
+			children = (
+				B161A579232C744500E79FAC /* PhotoList.swift */,
+				B161A58E232F1A6500E79FAC /* Photo.swift */,
+			);
+			path = "Network Data Models";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
