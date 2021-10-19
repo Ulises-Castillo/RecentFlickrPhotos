@@ -178,9 +178,8 @@ class PhotosCollectionViewController: UICollectionViewController {
         if showSpinner {
             snapshot.appendSections([.spinner])
             snapshot.appendItems([Item()])
-            self.dataSource.apply(snapshot, animatingDifferences: true)
-            dataSource.apply(snapshot, animatingDifferences: true)
         }
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
     
     //MARK: CollectionView - Delegate
