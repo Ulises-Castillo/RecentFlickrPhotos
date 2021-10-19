@@ -12,7 +12,7 @@ import UIKit
 //TODO: Add UI to handle slow network response & No Internet
 class PhotosCollectionViewController: UICollectionViewController {
     
-    var photos = [PhotoViewModel]()
+    private var items = [Item]()
     var focusedPhotoIndexPath: IndexPath?
     private var fetchingMorePhotos = false
     private let photoListViewModel = PhotoListViewModel()
@@ -20,12 +20,14 @@ class PhotosCollectionViewController: UICollectionViewController {
     private let spacing: CGFloat = 5
     private let NumberOfPhotosPerRowPortrait: CGFloat = 4
     private let NumberOfPhotosPerRowLandscape: CGFloat = 8
+    private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
     
     //MARK: Life Cycle Methods
     override func viewDidLoad() {
         super.viewDidLoad()
         configureNavigationBar()
         configureCollectionView()
+        configureDataSource()
         configureRefreshControll()
         observePhotoListSetup()
     }
@@ -62,11 +64,13 @@ class PhotosCollectionViewController: UICollectionViewController {
     
     private func observePhotoListSetup() {
         photoListKVO = photoListViewModel.observe(\PhotoListViewModel.photos, options: .new) { [unowned self] (photoListViewModel, change) in
-            self.collectionView.refreshControl?.endRefreshing()
-            self.fetchingMorePhotos = false
-            guard let photos = photoListViewModel.photos else { return }
-            self.photos = photos
-            self.collectionView.reloadData()
+            DispatchQueue.main.async {
+                self.collectionView.refreshControl?.endRefreshing()
+                self.fetchingMorePhotos = false
+                guard let photos = photoListViewModel.photos else { return }
+                self.items = itemsFromPhotos(photoViewModels: photos)
+                updateDataSource()
+            }
         }
     }
     
@@ -74,7 +78,7 @@ class PhotosCollectionViewController: UICollectionViewController {
     private func prepareDetailControllerForSegue(selectedPhotoIndex: IndexPath) -> PhotosDetailCollectionViewController {
         let detailVC = PhotosDetailCollectionViewController(collectionViewLayout: UICollectionViewFlowLayout())
         detailVC.title = title
-        detailVC.photos = photos
+        detailVC.photos = photoListViewModel.photos!
         detailVC.setSelectedPhotoIndexPath(selectedPhotoIndex)
         return detailVC
     }
@@ -108,39 +112,74 @@ class PhotosCollectionViewController: UICollectionViewController {
         let contentHeight = scrollView.contentSize.height
         
         // Do we need to fetch more photos ?
-        if !photos.isEmpty && !fetchingMorePhotos && offsetY > contentHeight - scrollView.frame.height * 2  {
-            fetchMorePhotos()
+        if !items.isEmpty && !fetchingMorePhotos && offsetY > contentHeight - scrollView.frame.height * 2  {
+            DispatchQueue.main.async {
+                self.fetchMorePhotos()
+            }
         }
     }
     
     func fetchMorePhotos() {
         fetchingMorePhotos = true
-        collectionView.reloadSections(IndexSet(integer: 1))
+        self.updateDataSource(showSpinner: true)
         photoListViewModel.fetchMorePhotos()
     }
     
     //MARK: CollectionView - Data Source
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if indexPath.section == 1 {
-            guard let activityCell = collectionView.dequeueReusableCell(withReuseIdentifier: ActivityIndicatorCell.reuseId, for: indexPath) as? ActivityIndicatorCell else {
-                return UICollectionViewCell()
-            }
-            activityCell.spinner.startAnimating()
-            return activityCell
-        }
-        guard let thumbnailCell = collectionView.dequeueReusableCell(withReuseIdentifier: ThumbnailPhotoCell.reuseId, for: indexPath) as? ThumbnailPhotoCell else {
-            return UICollectionViewCell()
-        }
-        let photo = photos[indexPath.row]
-        thumbnailCell.imageView.imageFromURL(photo.imageUrl)
-        return thumbnailCell
+    fileprivate enum Section {
+        case main
+        case spinner
     }
     
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if section == 1 && fetchingMorePhotos {
-            return 1
-        } else {
-            return section == 0 ? photos.count : 0
+    struct Item: Hashable {
+        let uuid = UUID()
+        var photoViewModel: PhotoViewModel?
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(uuid)
+        }
+    }
+    
+    private func itemsFromPhotos(photoViewModels: [PhotoViewModel]) -> [Item] {
+        var items = [Item]()
+        for photo in photoViewModels {
+            items.append(Item(photoViewModel: photo))
+        }
+        return items
+    }
+    
+    private func configureDataSource(){
+        dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView) {(collectionView, indexPath, item) -> UICollectionViewCell? in
+            let section: Section = indexPath.section == 0 ? .main : .spinner
+            
+            switch section {
+            case .main:
+                guard let thumbnailCell = collectionView.dequeueReusableCell(withReuseIdentifier: ThumbnailPhotoCell.reuseId, for: indexPath) as? ThumbnailPhotoCell,
+                      let photo = item.photoViewModel else {
+                    return UICollectionViewCell()
+                }
+                thumbnailCell.imageView.imageFromURL(photo.imageUrl)
+                return thumbnailCell
+            case .spinner:
+                guard let activityCell = collectionView.dequeueReusableCell(withReuseIdentifier: ActivityIndicatorCell.reuseId, for: indexPath) as? ActivityIndicatorCell else {
+                    return UICollectionViewCell()
+                }
+                activityCell.spinner.startAnimating()
+                return activityCell
+            }
+        }
+    }
+    
+    private func updateDataSource(showSpinner: Bool = false) {
+        var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+        snapshot.appendSections([.main])
+        snapshot.appendItems(self.items)
+        
+        if showSpinner {
+            snapshot.appendSections([.spinner])
+            snapshot.appendItems([Item()])
+            self.dataSource.apply(snapshot, animatingDifferences: true)
+            dataSource.apply(snapshot, animatingDifferences: true)
         }
     }
     
@@ -149,14 +188,11 @@ class PhotosCollectionViewController: UICollectionViewController {
         let detailVC = prepareDetailControllerForSegue(selectedPhotoIndex: indexPath)
         navigationController?.pushViewController(detailVC, animated: true)
     }
-    
-    override func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 2
-    }
 }
 
+//MARK: CollectionView - FlowLayout Delegate
 extension PhotosCollectionViewController: UICollectionViewDelegateFlowLayout {
-    //MARK: CollectionView - FlowLayout Delegate
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let numberOfItemsPerRow: CGFloat = UIDevice.current.orientation.isLandscape ? NumberOfPhotosPerRowLandscape : NumberOfPhotosPerRowPortrait
         let totalSpacing = (2 * spacing) + ((numberOfItemsPerRow - 1) * spacing)

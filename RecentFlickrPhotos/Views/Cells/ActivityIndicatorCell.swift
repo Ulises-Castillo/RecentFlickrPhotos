@@ -11,7 +11,7 @@ import UIKit
 class ActivityIndicatorCell: UICollectionViewCell {
     static let reuseId = "ActivityIndicatorCell"
     
-    let spinner = UIActivityIndicatorView(style: .gray)
+    let spinner = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.medium)
     
     override init(frame: CGRect) {
         super.init(frame: frame)

@@ -31,7 +31,7 @@ class FPImageView: UIImageView {
         imageUrlString = url.absoluteString
         
         // add activity indicator
-        let activityIndicator = UIActivityIndicatorView(style: .gray)
+        let activityIndicator = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.medium)
         activityIndicator.startAnimating()
         if self.image == nil {
             self.addEngulfingSubview(activityIndicator)
