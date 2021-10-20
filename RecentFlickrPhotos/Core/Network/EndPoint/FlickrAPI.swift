@@ -15,9 +15,9 @@ struct FlickrAPI {
     
     static let apiKey = "fee10de350d1f31d5fec0eaf330d2dba"
     
-    static var page = 1
-
-    static var recentPhotosEndpoint: String { return "services/rest/?method=flickr.photos.getRecent&api_key=\(apiKey)&page=\(page)&format=json&nojsoncallback=true&safe_search=true" }
+    static func recentPhotosEndpoint(page: Int) -> String {
+        return "services/rest/?method=flickr.photos.getRecent&api_key=\(apiKey)&page=\(page)&format=json&nojsoncallback=true&safe_search=true"
+    }
     
     // image URL format: https://farm{farm-id}.staticflickr.com/{server-id}/{id}_{secret}.jpg
     static func imageUrl(photo: Photo) -> URL? {

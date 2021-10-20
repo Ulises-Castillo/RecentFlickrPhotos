@@ -9,7 +9,7 @@
 import Foundation
 
 // most elemental ViewModel
-@objc class PhotoViewModel: NSObject {
+class PhotoViewModel: NSObject {
     // only propertied required for UI
     let imageUrl: URL
     let title: String

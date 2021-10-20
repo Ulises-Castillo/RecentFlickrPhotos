@@ -7,20 +7,21 @@
 //
 
 import UIKit
+import Combine
 
 //TODO: endless feed/scrolling (next page of photos)
 //TODO: Add UI to handle slow network response & No Internet
 class PhotosCollectionViewController: UICollectionViewController {
     
+    private var cancellables = Set<AnyCancellable>()
+    private let photoListViewModel = PhotoListViewModel()
+    private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
+    
     private var items = [Item]()
     var focusedPhotoIndexPath: IndexPath?
-    private var fetchingMorePhotos = false
-    private let photoListViewModel = PhotoListViewModel()
-    private var photoListKVO: NSKeyValueObservation? = nil
     private let spacing: CGFloat = 5
     private let NumberOfPhotosPerRowPortrait: CGFloat = 4
     private let NumberOfPhotosPerRowLandscape: CGFloat = 8
-    private var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
     
     //MARK: Life Cycle Methods
     override func viewDidLoad() {
@@ -29,7 +30,8 @@ class PhotosCollectionViewController: UICollectionViewController {
         configureCollectionView()
         configureDataSource()
         configureRefreshControll()
-        observePhotoListSetup()
+        setViewModelListeners()
+        photoListViewModel.getPhotos()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -41,7 +43,6 @@ class PhotosCollectionViewController: UICollectionViewController {
     private func configureRefreshControll() {
         collectionView.refreshControl = UIRefreshControl()
         collectionView.refreshControl!.addTarget(self, action: #selector(handleRefreshControl), for: .valueChanged)
-        collectionView.refreshControl!.beginRefreshing()
     }
     
     private func configureNavigationBar() {
@@ -62,24 +63,35 @@ class PhotosCollectionViewController: UICollectionViewController {
         flowLayout.sectionInsetReference = .fromSafeArea
     }
     
-    private func observePhotoListSetup() {
-        photoListKVO = photoListViewModel.observe(\PhotoListViewModel.photos, options: .new) { [unowned self] (photoListViewModel, change) in
-            DispatchQueue.main.async {
-                self.collectionView.refreshControl?.endRefreshing()
-                self.fetchingMorePhotos = false
-                guard let photos = photoListViewModel.photos else { return }
+    private func setViewModelListeners() {
+        Publishers.CombineLatest(photoListViewModel.isFirstLoadingPageSubject, photoListViewModel.photosSubject).sink {[weak self] (isLoading, photos) in
+            if isLoading {
+                self?.collectionView.refreshControl?.beginRefreshing()
+            } else {
+                self?.collectionView.restore()
+                guard let self = self, self.items.count < photos.count else { return } // refactor
                 let newPhotos = photos[self.items.count..<photos.count]
-                self.items += itemsFromPhotos(photoViewModels: newPhotos)
-                updateDataSource()
+                self.items += self.itemsFromPhotos(photoViewModels: newPhotos)
+                self.collectionView.refreshControl?.endRefreshing()
+                self.updateDataSource()
+                self.loadingMorePhotos = false
+                
+                if photos.isEmpty {
+                    self.collectionView.setEmptyMessage(message: "No character found")
+                } else {
+                    self.collectionView.restore()
+                    
+                }
             }
         }
+        .store(in: &cancellables)
     }
     
     // MARK: Miscellaneous
     private func prepareDetailControllerForSegue(selectedPhotoIndex: IndexPath) -> PhotosDetailCollectionViewController {
         let detailVC = PhotosDetailCollectionViewController(collectionViewLayout: UICollectionViewFlowLayout())
         detailVC.title = title
-        detailVC.photos = photoListViewModel.photos!
+        detailVC.photos = photoListViewModel.photosSubject.value
         detailVC.setSelectedPhotoIndexPath(selectedPhotoIndex)
         return detailVC
     }
@@ -96,7 +108,9 @@ class PhotosCollectionViewController: UICollectionViewController {
     }
     
     @objc private func handleRefreshControl() {
-        photoListViewModel.fetchPhotos()
+        photoListViewModel.photosSubject.value = []
+        items = []
+        photoListViewModel.getPhotos(firstPage: true)
     }
     
     override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -108,22 +122,21 @@ class PhotosCollectionViewController: UICollectionViewController {
         }
     }
     
+    var loadingMorePhotos = false
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let offsetY = scrollView.contentOffset.y
-        let contentHeight = scrollView.contentSize.height
+        let position = scrollView.contentOffset.y
+        let collectionViewContentSizeHeight = scrollView.contentSize.height
+        let scrollViewHeight = scrollView.frame.height
         
-        // Do we need to fetch more photos ?
-        if !items.isEmpty && !fetchingMorePhotos && offsetY > contentHeight - scrollView.frame.height * 2  {
+        if position > (collectionViewContentSizeHeight - (scrollViewHeight * 2) - 100) {
             DispatchQueue.main.async {
-                self.fetchMorePhotos()
+                self.photoListViewModel.getPhotos()
+                if !self.loadingMorePhotos {
+                    self.loadingMorePhotos = true
+                    self.updateDataSource(showSpinner: !self.photoListViewModel.isFirstLoadingPageSubject.value)
+                }
             }
         }
-    }
-    
-    func fetchMorePhotos() {
-        fetchingMorePhotos = true
-        self.updateDataSource(showSpinner: true)
-        photoListViewModel.fetchMorePhotos()
     }
     
     //MARK: CollectionView - Data Source
@@ -201,5 +214,33 @@ extension PhotosCollectionViewController: UICollectionViewDelegateFlowLayout {
             return CGSize(width: collectionView.safeAreaLayoutGuide.layoutFrame.width, height: width / 1.5)
         }
         return CGSize(width: width, height: width)
+    }
+}
+
+extension UICollectionView {
+    func setEmptyMessage(message: String) {
+        let messageLabel = UILabel(frame: CGRect(x: 0, y: 0, width: self.bounds.size.width, height: self.bounds.size.height))
+        messageLabel.text = message
+        messageLabel.textColor = .systemGray2
+        messageLabel.numberOfLines = 0
+        messageLabel.textAlignment = .center
+        messageLabel.font = UIFont.preferredFont(forTextStyle: .title2)
+        messageLabel.sizeToFit()
+        
+        self.backgroundView = messageLabel
+        
+    }
+    
+    func restore() {
+        self.backgroundView = nil
+    }
+}
+
+extension UICollectionView {
+    func setLoading(){
+        let activityIndicatorView = UIActivityIndicatorView(style: .medium)
+        activityIndicatorView.color = .gray
+        self.backgroundView = activityIndicatorView
+        activityIndicatorView.startAnimating()
     }
 }

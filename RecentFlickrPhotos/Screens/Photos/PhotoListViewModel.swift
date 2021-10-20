@@ -7,70 +7,52 @@
 //
 
 import Foundation
+import Combine
 
 // top layer enclosing ViewModel
 // responsible for fetching & managing the list of ViewModels required to display photos
-@objc class PhotoListViewModel: NSObject {
-    @objc dynamic var photos: [PhotoViewModel]?
+class PhotoListViewModel: NSObject {
+    private var cancellables = Set<AnyCancellable>()
+    private var isLoadingPage = false
     
-    // upon creation
-    override init() {
-        super.init()
+    let photosSubject = CurrentValueSubject<[PhotoViewModel], Never>([])
+    let isFirstLoadingPageSubject = CurrentValueSubject<Bool, Never>(true)
+    
+    var currentPage = 1
+//    var canLoadMorePages = true
         
-        fetchPhotos() // kickoff data fetch
-    }
+    private var networkService = NetworkService()
     
-    // request/fetch data
-    func fetchPhotos() {
-        // create new request struct containing all params required to execute
-        var request = FlickrGetPhotosRequest()
-        
-        // set the handlers called upon completion of the request
-        request.successHandler = { [unowned self] photos in
-            DispatchQueue.main.async {
-                self.updatePhotoList(photoList: photos)
-            }
-        }
-        request.failureHandler = { [unowned self] error in
-            DispatchQueue.main.async {
-                let tmp = self.photos
-                self.photos = tmp // trigger KVO
-                Log.debug(error.localizedDescription)
-            }
-        }
-    
-        // initiate the request process
-        request.execute()
-    }
-    
-    func fetchMorePhotos() {
-        FlickrAPI.page += 1 // next page of photos
-        var request = FlickrGetPhotosRequest()
-        
-        request.successHandler = { [unowned self] photos in
-            DispatchQueue.main.async {
-                self.addToPhotosList(photoList: photos)
-            }
-        }
-        request.failureHandler = { [unowned self] error in
-            DispatchQueue.main.async {
-                FlickrAPI.page -= 1
-                let tmp = self.photos
-                self.photos = tmp // trigger KVO
-                Log.debug(error.localizedDescription)
-            }
+    //Get phots from API
+    func getPhotos(firstPage: Bool = false) {
+        if firstPage {
+            currentPage = 1
         }
         
-        request.execute()
-    }
-    
-    private func updatePhotoList(photoList: PhotoList) {
-        photos = photoViewModels(from: photoList)
-    }
-    
-    private func addToPhotosList(photoList: PhotoList) {
-        guard let _ = photos else { return }
-        photos! += photoViewModels(from: photoList)
+        guard !isLoadingPage else { //&& canLoadMorePages
+            return
+        }
+        isLoadingPage = true
+        networkService.getPhotos(for: currentPage).sink {[weak self] (completion) in
+            if case .failure(let apiError) = completion {
+                self?.photosSubject.value.removeAll()
+                self?.isFirstLoadingPageSubject.value = false
+                self?.isLoadingPage = false
+                print(apiError.errorMessage)
+            }
+        } receiveValue: {[weak self] (photoList) in
+            if self?.currentPage == 1 {
+                self?.photosSubject.value.removeAll()
+            }
+//            if characterResponseModel.pageInfo.pageCount == self?.currentPage {
+//                self?.canLoadMorePages = false
+//            }
+            self?.currentPage += 1
+            self?.photosSubject.value.append(contentsOf: self?.photoViewModels(from: photoList) ?? [])
+            self?.isFirstLoadingPageSubject.value = false
+            self?.isLoadingPage = false
+        }
+        .store(in: &cancellables)
     }
     
     // Takes a PhotoList model and return a list of PhotoViewModels
