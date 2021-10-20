@@ -11,12 +11,17 @@ import Foundation
 struct FlickrAPI {
     // GET recent photos URL
     // https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&api_key=fee10de350d1f31d5fec0eaf330d2dba&format=json&nojsoncallback=true&safe_search=true
-    static let baseUrlString = "https://api.flickr.com" // called Flickr domain ?
+    static private let baseUrlString = "https://api.flickr.com" // called Flickr domain ?
     
-    static let apiKey = "fee10de350d1f31d5fec0eaf330d2dba"
+    static private let apiKey = "fee10de350d1f31d5fec0eaf330d2dba"
     
-    static func recentPhotosEndpoint(page: Int) -> String {
-        return "services/rest/?method=flickr.photos.getRecent&api_key=\(apiKey)&page=\(page)&format=json&nojsoncallback=true&safe_search=true"
+    static func recentPhotosUrl(page: Int) -> URL {
+        let endpoint = "services/rest/?method=flickr.photos.getRecent&api_key=\(apiKey)&page=\(page)&format=json&nojsoncallback=true&safe_search=true"
+        let urlString = baseUrlString + "/" + endpoint
+        guard let url = URL(string: urlString) else {
+            preconditionFailure("Invalid URL: \(urlString)")
+        }
+        return url
     }
     
     // image URL format: https://farm{farm-id}.staticflickr.com/{server-id}/{id}_{secret}.jpg

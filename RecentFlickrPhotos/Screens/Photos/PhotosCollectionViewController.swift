@@ -125,13 +125,14 @@ class PhotosCollectionViewController: UICollectionViewController {
     var loadingMorePhotos = false
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let position = scrollView.contentOffset.y
-        let collectionViewContentSizeHeight = scrollView.contentSize.height
-        let scrollViewHeight = scrollView.frame.height
+        let collectionViewContentSizeHeight = collectionView.contentSize.height
+        let scrollViewHeight = scrollView.frame.size.height
         
-        if position > (collectionViewContentSizeHeight - (scrollViewHeight * 2) - 100) {
-            DispatchQueue.main.async {
+        if position > (collectionViewContentSizeHeight - 100 - (scrollViewHeight * 1.5)) {
+            
+            if !self.loadingMorePhotos {
                 self.photoListViewModel.getPhotos()
-                if !self.loadingMorePhotos {
+                DispatchQueue.main.async {
                     self.loadingMorePhotos = true
                     self.updateDataSource(showSpinner: !self.photoListViewModel.isFirstLoadingPageSubject.value)
                 }
@@ -198,6 +199,7 @@ class PhotosCollectionViewController: UICollectionViewController {
     
     //MARK: CollectionView - Delegate
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard indexPath.section == 0 else { return }
         let detailVC = prepareDetailControllerForSegue(selectedPhotoIndex: indexPath)
         navigationController?.pushViewController(detailVC, animated: true)
     }

@@ -12,8 +12,7 @@ import Combine
 extension NetworkService {
     func getPhotos(for page: Int) -> Future<PhotoList, APIError> {
         
-        let url = URL(string: FlickrAPI.baseUrlString + "/" + FlickrAPI.recentPhotosEndpoint(page: page))!
-        var urlRequest = URLRequest(url: url)
+        var urlRequest = URLRequest(url: FlickrAPI.recentPhotosUrl(page: page))
         
         urlRequest.httpMethod = HTTPTypes.GET.rawValue
         let publisher: AnyPublisher<PhotoList, Error> = fetchWithURLRequest(urlRequest)
